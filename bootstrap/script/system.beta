@@ -1,0 +1,12 @@
+#!/bin/bash
+username=$1
+
+# set master ip
+MASTERID=`cat /mnt/var/lib/info/job-flow.json | grep masterInstanceId | awk -F'"' '{print $4}'`
+MASTERIP=`aws ec2 describe-instances --instance-ids "${MASTERID}" |grep PrivateIpAddress | head -n 1 | awk -F'"' '{print $4}'`
+echo ${MASTERIP}
+
+sudo sh -c  "echo '${MASTERIP} master' >> /etc/hosts"
+
+/usr/lib/hadoop/bin/hadoop fs -mkdir /user/${username}
+/usr/lib/hadoop/bin/hadoop fs -chown ${username} /user/${username}

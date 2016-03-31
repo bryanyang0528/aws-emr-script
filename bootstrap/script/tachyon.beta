@@ -1,0 +1,35 @@
+#!bin/bash
+
+# install mvn
+sudo wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+sudo sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+sudo yum install -y apache-maven
+mvn --version
+
+# install tachyon
+mkdir temp && cd temp
+wget http://tachyon-project.org/downloads/files/0.7.1/tachyon-0.7.1-bin.tar.gz
+tar xvfz tachyon-0.7.1-bin.tar.gz
+cd tachyon-0.7.1
+cp conf/tachyon-env.sh.template conf/tachyon-env.sh
+
+
+# get cluster id
+CLUSTERID=`cat /mnt/var/lib/info/job-flow.json | grep jobFlowId | awk -F'"' '{print $4}'`
+
+# get internal ip
+aws emr list-instances --cluster-id ${CLUSTERID} | grep PrivateIpAddress | awk -F'"' '{print $4}' > conf/workers
+
+# set permission
+eval `ssh-agent -s`
+ssh-add ~/.ssh/vpon-emr.pem
+
+
+if grep isMaster /mnt/var/lib/info/instance.json | grep true;
+then
+./bin/tachyon format
+./bin/tachyon-start.sh all SudoMount
+./bin/tachyon-start.sh workers SudoMount
+fi
+
+

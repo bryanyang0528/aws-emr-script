@@ -1,0 +1,39 @@
+#!/bin/bash 
+set -x
+
+DEFAULT_TEZ_VERSION=0.4.1
+TEZ_VERSION="unspecified"
+
+while getopts "v:" opt; do
+  case $opt in
+    v)
+      TEZ_VERSION=$OPTARG
+      ;;
+  esac
+done
+
+case $TEZ_VERSION in
+  0.4.1)
+    echo "Installing version $TEZ_VERSION..."
+  ;;
+  0.5.1)
+    echo "Installing version $TEZ_VERSION..."
+  ;;
+  unspecified)
+    echo "No version specified, using default"
+    TEZ_VERSION=$DEFAULT_TEZ_VERSION
+    echo "Installing version $TEZ_VERSION..."
+  ;;
+  *)
+    echo "Invalid version $TEZ_VERSION"
+    exit 1
+  ;;
+esac
+
+cd ~hadoop/tez/
+hdfs dfs -mkdir -p /apps/tez/tez-$TEZ_VERSION/lib/
+hdfs dfs -put *.jar /apps/tez/tez-$TEZ_VERSION/
+hdfs dfs -put lib/*.jar /apps/tez/tez-$TEZ_VERSION/lib/
+hdfs dfs -mkdir -p /user/hadoop/
+cp -p ~hadoop/tez/*.jar ~hadoop/hive/lib/
+cp -p ~hadoop/tez/lib/commons-collections4-* ~hadoop/hive/lib

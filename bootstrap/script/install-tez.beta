@@ -1,0 +1,60 @@
+#!/bin/bash 
+set -x
+if [ -f /tmp/install-tez ]; then
+	exit 0
+fi
+
+DEFAULT_TEZ_VERSION=0.4.1
+TEZ_VERSION="unspecified"
+
+while getopts "v:" opt; do
+  case $opt in
+    v)
+      TEZ_VERSION=$OPTARG
+      ;;
+  esac
+done
+
+case $TEZ_VERSION in
+  0.4.1)
+    echo "Installing version $TEZ_VERSION..."
+  ;;
+  0.5.1)
+    echo "Installing version $TEZ_VERSION..."
+  ;;
+  unspecified)
+    echo "No version specified, using default"
+    TEZ_VERSION=$DEFAULT_TEZ_VERSION
+    echo "Installing version $TEZ_VERSION..."
+  ;;
+  *)
+    echo "Invalid version $TEZ_VERSION"
+    exit 1
+  ;;
+esac
+# Configuration
+BUCKET=support.elasticmapreduce
+TEZ_BUCKET_PATH=tez
+
+cd ~hadoop
+mkdir tez-$TEZ_VERSION
+ln -s tez-$TEZ_VERSION tez
+cd tez
+hdfs dfs -get s3://$BUCKET/$TEZ_BUCKET_PATH/$TEZ_VERSION/* .
+
+rm -f lib/httpc*.jar
+cp -p ~hadoop/share/hadoop/common/lib/httpc*.jar lib/
+
+sudo mkdir -p /etc/tez/conf/
+hdfs dfs -get s3://$BUCKET/$TEZ_BUCKET_PATH/$TEZ_VERSION/conf/* .
+sudo mv tez-site.xml tez-env.sh /etc/tez/conf/
+
+cat <<EOF >> ~hadoop/.bashrc
+export TEZ_LOG_DIR=/home/hadoop/tez/log
+export TEZ_HOME="/home/hadoop/tez"
+export TEZ_CONF_DIR="/etc/tez/conf"
+export TEZ_JARS=/apps/tez/tez-$TEZ_VERSION/*:/apps/tez/tez-$TEZ_VERSION/lib/*
+export HADOOP_CLASSPATH=\${TEZ_CONF_DIR}:\${TEZ_JARS}/*:\${TEZ_JARS}/lib/*
+EOF
+
+touch /tmp/install-tez

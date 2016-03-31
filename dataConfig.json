@@ -1,0 +1,55 @@
+[{  
+      "Classification":"spark",
+      "Properties":{  
+         "maximizeResourceAllocation":"true"
+      },
+      "Configurations":[  
+
+      ]
+   },
+   {  
+      "Classification":"spark-defaults",
+      "Properties":{  
+         "spark.serializer":"org.apache.spark.serializer.KryoSerializer"
+      },
+      "Configurations":[  
+
+      ]
+   },
+   {  
+      "Classification":"hive-site",
+      "Properties":{  
+         "javax.jdo.option.ConnectionUserName":"hive",
+         "javax.jdo.option.ConnectionPassword":"password",
+         "javax.jdo.option.ConnectionURL":"jdbc:mysql://localhost",
+         "hive.security.authorization.enabled":"true",
+         "hive.security.authorization.createtable.owner.grants":"ALL"
+      },
+      "Configurations":[  
+
+      ]
+   },
+{
+  "Classification": "hue-ini",
+  "Properties": {},
+  "Configurations": [
+    {
+      "Classification": "desktop",
+      "Properties": {},
+      "Configurations": [
+        {
+          "Classification": "database",
+          "Properties": {
+            "name": "hue",
+            "user": "hue",
+            "password": "password",
+            "host": "localhost",
+            "port": "3306",
+            "engine": "mysql"
+          },
+          "Configurations": []
+        }
+      ]
+    }
+  ]
+}]
